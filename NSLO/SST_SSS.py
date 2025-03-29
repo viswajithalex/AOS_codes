@@ -186,28 +186,33 @@ for i in range(len(seasons)):
         plt.show()
 
 #%%
-bob_fw_sst1 = sst.sel(LAT = slice(18,20),LONN179_181 = slice(86,88))
-bob_fw_sss1= sss.sel(LAT = slice(18,20),LONN179_181 =slice(86,88))
 
+seasons = ['DJF','MAM','JJA','SON']
 
-sa_r2= np.linspace(10,40,10)
-ct_r2 = np.linspace(10,40,10)
+for i in range(len(seasons)):
+    
+        
+        bob_mx_sst = sst.sel(TIME = time3.dt.season == seasons[i] ,LAT = slice(0,12),LONN179_181 = slice(70,90))
+        bob_mx_sss= sss.sel(TIME = time3.dt.season == seasons[i] ,LAT = slice(0,12),LONN179_181 =slice(70,90))
+        
+        
+        sa_r1= np.linspace(10,40,10)
+        ct_r1 = np.linspace(10,40,10)
+        
+        x1,y1= np.meshgrid(sa_r1,ct_r1)
+        
+        sigma_grid1 = gsw.sigma0(x1,y1)
+        plt.figure(figsize = (12,8),dpi =100)
+        a = plt.contour(x1,y1,sigma_grid,levels =20,colors = 'black')
+        plt.scatter(bob_mx_sss,bob_mx_sst, s = 0.6,alpha = 0.5,color = 'red')
+        plt.clabel(a, inline=True, fontsize=8, fmt="%.1f")
+        
+        plt.xlabel("SSS (PSU)")
+        plt.ylabel("SST (°C)")
+        plt.title(f'Density Contours over SST-SSS Scatter of 0-12N and 70-90E during {seasons[i]}')
+        plt.show()
 
-x2,y2= np.meshgrid(sa_r2,ct_r2)
-
-sigma_grid1 = gsw.sigma0(x2,y2)
-plt.figure(figsize = (12,8),dpi =100)
-a = plt.contour(x2,y2,sigma_grid,levels =20,colors = 'black')
-plt.scatter(bob_fw_sss1,bob_fw_sst1, s = 0.6,alpha = 0.5,color = 'red')
-plt.clabel(a, inline=True, fontsize=8, fmt="%.1f")
-
-plt.xlabel("SSS (PSU)")
-plt.ylabel("SST (°C)")
-plt.title("Density Contours over SST-SSS Scatter of 18-20N and 86-88E")
-
-plt.show()
 #%%
-
 beta = gsw.alpha(SA,CT,p)*(10**4)
 
 beta_t = beta.mean(dim =('TIME'))
@@ -221,3 +226,41 @@ ax.gridlines(visible=True,draw_labels=True)
 cbar = plt.colorbar(im)
 cbar.set_label('TEC')
 ax.set_title('Surface Thermal Expansion Coefficient(TEC)', pad = 30)
+
+#%%
+p_atm = 1.01*(10**5)
+rho = 1.024*(10**3)
+g = 9.8
+h = [0,500,1000,1500,2000]
+sst_bob = sst.sel(LAT = slice(7,30),LONN179_181 = slice(75,100))
+sss_bob = sss.sel(LAT = slice(7,30),LONN179_181 = slice(75,100))
+
+lat = np.linspace(7,30,26)
+lon = np.linspace(75,100,23)
+
+for i in range(len(h)):
+    
+    p = p_atm + (rho*g*h[i])
+    
+    SA_thermo = gsw.SA_from_SP(sss_bob,p,lon,lat)
+
+    CT_thermo = gsw.CT_from_pt(SA_thermo,sst_bob)
+
+    sigma0_thermo = gsw.sigma0(SA_thermo,CT_thermo)
+
+    plt.figure(figsize = (15,10),dpi =100)
+    a = plt.contour(SA_thermo,CT_thermo, sigma0_thermo,levels =20)
+    plt.scatter(sss_bob,sst_bob, s = 0.6,alpha = 0.5,color = 'red')
+    plt.clabel(a, inline=True, fontsize=8, fmt="%.1f")
+    
+    plt.xlabel("SSS (PSU)")
+    plt.ylabel("SST (°C)")
+    plt.title("Density Contours over SST-SSS Scatter of Bay of Bengal")
+    
+    plt.show()
+
+#%%
+
+
+
+
