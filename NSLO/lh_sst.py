@@ -78,3 +78,50 @@ plt.grid(True)
 plt.legend()
 plt.show()
 
+#%% lhf variability over sst
+
+lhf = lh.sel(LAT = slice(-30,25),LONN179_180 = slice(30,110))
+
+# lhf_g = lhf.groupby('TIME.year')
+
+lhf_t = np.std(lhf,axis =0)
+
+
+LON = np.linspace(-30,25,55)
+LAT =np.linspace(30,110,80)
+
+plt.figure(figsize = (15,10),dpi = 100)
+ax = plt.axes(projection = ccrs.PlateCarree())
+ax.coastlines()
+levels =np.linspace(0,50)
+im =  plt.contourf(LAT,LON,lhf_t,levels,cmap ='seismic')
+ax.add_feature(cf.LAND,color = 'grey')
+ax.gridlines(visible=True,draw_labels=True)
+cbar = plt.colorbar(im)
+
+#%%
+
+
+seasons = ['DJF','MAM','JJA','SON']
+
+for i in range(len(seasons)):
+    lhf = lh.sel(TIME = time3.dt.season == seasons[i],LAT = slice(-30,25),LONN179_180 = slice(30,110))
+
+    # lhf_g = lhf.groupby('TIME.year')
+
+    lhf_t = np.std(lhf,axis =0)
+
+
+    LON = np.linspace(-30,25,55)
+    LAT =np.linspace(30,110,80)
+
+    plt.figure(figsize = (15,10),dpi = 100)
+    ax = plt.axes(projection = ccrs.PlateCarree())
+    ax.coastlines()
+    levels =np.linspace(0,50)
+    im =  plt.contourf(LAT,LON,lhf_t,levels,cmap ='seismic')
+    ax.add_feature(cf.LAND,color = 'grey')
+    ax.gridlines(visible=True,draw_labels=True)
+    cbar = plt.colorbar(im)
+
+    
