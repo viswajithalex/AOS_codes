@@ -98,46 +98,36 @@ plt.ylabel('Rainfall (mm)')
 plt.title('Time Series of Rainfall')
 #%%
 
-c = np.fft.fft(rf_area)
+yf = np.fft.rfft(rf_area)
 
-ck = np.abs(c)
+N = np.size(rf_area)
 
-n =c.size
+# xf = np.fft.rfftfreq(N,1)
+t = np.linspace(0,3650,1826)
 
-freq = np.fft.fftfreq(n,d = 1)
-
-plt.figure()
-plt.plot(freq,ck)
-plt.xlabel('Frequency')
-plt.ylabel('Amplitude')
+plt.figure(figsize= (12,4),dpi =100)
+plt.plot(t,np.abs(yf))
+plt.xlabel('Time')
+plt.ylabel('Power')
+plt.title('Power Spectra of Rainfall')
 plt.grid()
 
 #%%
+ff_ano = rf_area - rf.mean(dim =('LATITUDE','LONGITUDE'))
 
-F = np.abs(np.fft.fftfreq(n,1))
-T = (1/F)
+yf1 = np.fft.rfft(ff_ano)
 
-plt.figure()
-plt.plot(T,ck)
-plt.xlabel('Time period')
-plt.ylabel('Amplitude')
+N1 = np.size(ff_ano)
+
+# xf1 = np.fft.rfftfreq(N1,1)
+
+t = np.linspace(0,3650,1826)
+
+plt.figure(figsize= (12,4),dpi =100)
+plt.plot(t,np.abs(yf1))
+plt.xlabel('Time')
+plt.ylabel('Power')
+plt.title('Power Spectra of anomaly in daily rainfall')
 plt.grid()
-#%%
-rf_ano_area = rf_ano.sel(LATITUDE = rf_lat,LONGITUDE = rf_lon )
-
-c_ano = np.fft.fft(rf_ano_area[0:365])
-
-ck_ano = np.abs(c_ano)
-
-m =c_ano.size
-
-f = np.abs(np.fft.fftfreq(m,1))
-T_ano = (1/f)
 
 
-
-plt.figure()
-plt.plot(T_ano,ck_ano)
-plt.xlabel('Time period')
-plt.ylabel('Amplitude')
-plt.grid()
