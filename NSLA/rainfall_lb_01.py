@@ -83,10 +83,10 @@ plt.title('Time Series of Rainfall anomaly over India in 2000')
 #%%
 
 
-rf_lat = 15
-rf_lon = 80
+rf_lat = 10
+rf_lon = 76.5
 
-rf_area = rf.sel(LATITUDE = rf_lat,LONGITUDE = rf_lon)
+rf_area = rf.sel(LATITUDE = rf_lat,LONGITUDE = rf_lon,method ='nearest')
 
 
 t = time[0:-3]
@@ -98,15 +98,19 @@ plt.ylabel('Rainfall (mm)')
 plt.title('Time Series of Rainfall')
 #%%
 
-yf = np.fft.rfft(rf_area)
+yf = np.fft.fft(rf_area)
 
 N = np.size(rf_area)
 
-# xf = np.fft.rfftfreq(N,1)
-t = np.linspace(0,3650,1826)
+omega = np.fft.fftfreq(N,1)
+
+tp =1/omega
+
+t = np.linspace(0,3650,3650)
 
 plt.figure(figsize= (12,4),dpi =100)
-plt.plot(t,np.abs(yf))
+plt.xlim(0,4000)
+plt.plot(tp,np.abs(yf))
 plt.xlabel('Time')
 plt.ylabel('Power')
 plt.title('Power Spectra of Rainfall')
@@ -115,19 +119,103 @@ plt.grid()
 #%%
 ff_ano = rf_area - rf.mean(dim =('LATITUDE','LONGITUDE'))
 
-yf1 = np.fft.rfft(ff_ano)
+yf1 = np.fft.fft(ff_ano)
 
 N1 = np.size(ff_ano)
 
-# xf1 = np.fft.rfftfreq(N1,1)
+omega1 = np.fft.fftfreq(N1,1)
+
+tp1 =1/omega
 
 t = np.linspace(0,3650,1826)
 
 plt.figure(figsize= (12,4),dpi =100)
-plt.plot(t,np.abs(yf1))
+plt.xlim(0,4000)
+plt.plot(tp1,np.abs(yf1))
 plt.xlabel('Time')
 plt.ylabel('Power')
 plt.title('Power Spectra of anomaly in daily rainfall')
 plt.grid()
+#%% inverse fft
+
+yf = np.fft.fft(rf_area)
+
+# ck =abs(yf)
+
+yf_inv = np.fft.ifft(yf)
+
+t = np.linspace(0,3650,3650)
+
+plt.figure(figsize= (12,4),dpi =100)
+plt.plot(t,yf_inv)
+plt.xlabel('Time')
+plt.ylabel('rainfall')
+plt.title('Time series of Rainfall(inverse method)')
+plt.grid()
+#%% overlapping original and reconstructed
+
+plt.figure(figsize = (12,8),dpi =100)
+plt.plot(t,rf_area)
+plt.plot(t,yf_inv)
+
+rf_diff = rf_area - yf_inv
+plt.figure(figsize=(12,8),dpi =100)
+
+plt.plot(t,rf_diff)
 
 
+#%% annual cycle
+
+omega_inv = 1/omega
+
+
+
+sel_coeff = np.zeros_like(yf)
+
+sel_coeff[0]= yf[0]
+sel_coeff[10]= yf[10]
+sel_coeff[-10]= yf[-10]
+
+coeff_inv = np.fft.ifft(sel_coeff)
+plt.plot(rf_area)
+plt.plot(coeff_inv)
+plt.xlabel('TIME')
+plt.ylabel('RAINFALL')
+#%% semi - annual cycle
+
+sel_coeff[20] = yf[20]
+sel_coeff[-20] = yf[-20]
+
+coeff_inv = np.fft.ifft(sel_coeff)
+plt.plot(rf_area)
+plt.plot(coeff_inv)
+plt.xlabel('TIME')
+plt.ylabel('RAINFALL')
+#%% intra seasonal 
+
+sel_coeff2 = np.zeros_like(yf)
+
+sel_coeff2[41:182] = yf[41:182]
+sel_coeff2[-182:-41] = yf[-182:-41]
+
+coeff_inv2 = np.fft.ifft(sel_coeff2)
+plt.plot(rf_area)
+plt.plot(coeff_inv2)
+plt.xlabel('TIME')
+plt.ylabel('RAINFALL')
+
+#%%
+
+rf_1991 = rf.sel(TIME = slice('1991-01-01','1991-12-31'),LATITUDE = rf_lat,LONGITUDE = rf_lon)
+
+anomaly = rf_1991 - coeff_inv[0:365]
+
+plt.figure(figsize = (12,5),dpi =100)
+plt.xlim(0,365)
+plt.plot(anomaly,label = '1991 rainfall data')
+plt.plot(coeff_inv2, label = 'intra - seasonal variability')
+plt.xlabel('TIME')
+plt.ylabel('RAINFALL (mm)')
+plt.grid()
+plt.legend()
+plt.show()
