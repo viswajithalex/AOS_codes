@@ -180,17 +180,32 @@ coeff_inv = np.fft.ifft(sel_coeff)
 plt.plot(rf_area)
 plt.plot(coeff_inv)
 plt.xlabel('TIME')
-plt.ylabel('RAINFALL')
+plt.ylabel('RAINFALL ')
 #%% semi - annual cycle
 
 sel_coeff[20] = yf[20]
 sel_coeff[-20] = yf[-20]
 
+plt.figure(figsize =(12,8),dpi =100)
 coeff_inv = np.fft.ifft(sel_coeff)
 plt.plot(rf_area)
-plt.plot(coeff_inv)
+plt.plot(coeff_inv, label = 'smooth climatology')
+plt.xlabel('TIME')
+plt.ylabel('RAINFALL (mm)')
+plt.title('Time series of Rainfall(Smooth climatology)')
+plt.legend()
+#%%
+
+anomaly_smooth_clim = rf_area - coeff_inv
+
+plt.plot(anomaly_smooth_clim)
+
 plt.xlabel('TIME')
 plt.ylabel('RAINFALL')
+plt.title('Anomalies Computed by Removing Smoothed Climatology')
+
+
+
 #%% intra seasonal 
 
 sel_coeff2 = np.zeros_like(yf)
@@ -210,10 +225,12 @@ rf_1991 = rf.sel(TIME = slice('1991-01-01','1991-12-31'),LATITUDE = rf_lat,LONGI
 
 anomaly = rf_1991 - coeff_inv[0:365]
 
+
+# plt.plot(anomaly,label = '1991 rainfall data')
+# plt.xlim(0,365)
 plt.figure(figsize = (12,5),dpi =100)
-plt.xlim(0,365)
-plt.plot(anomaly,label = '1991 rainfall data')
-plt.plot(coeff_inv2, label = 'intra - seasonal variability')
+plt.plot(anomaly_smooth_clim, label = 'Anomalies Computed by Removing Smoothed Climatology')
+plt.plot(coeff_inv2, label = 'intra - seasonal variability',color = 'red')
 plt.xlabel('TIME')
 plt.ylabel('RAINFALL (mm)')
 plt.grid()
